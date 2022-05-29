@@ -12,6 +12,8 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+
+
 // Flags
 var (
 	BotToken = flag.String("token", "OTc5Mzg4OTI4Mjg3MTk5MzIy.GY0nX_.cB6mtqoxEQ1nk9AUkjbeKh9qkgnR2xzqlupjmI", "Bot token")
@@ -24,37 +26,16 @@ var games map[string]time.Time = make(map[string]time.Time)
 func init() { flag.Parse() }
 
 func main() {
+  word_set := make(map[string]string)
+  word_set["hallo"] = "hello"
+  word_set["warum"] = "why"
+  word_set["gut"] = "good"
 	s, _ := discordgo.New("Bot " + *BotToken)
 	s.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
 		fmt.Println("Bot is ready")
 	})
 	s.AddHandler(func(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if strings.Contains(m.Content, "$start") {
-
-      
-			if ch, err := s.State.Channel(m.ChannelID); err != nil || !ch.IsThread() {
-				thread, err := s.MessageThreadStartComplex(m.ChannelID, m.ID, &discordgo.ThreadStart{
-					Name:                "Learn words with: " + m.Author.Username,
-					Invitable:           false,
-					RateLimitPerUser:    5,
-				})
-				if err != nil {
-					panic(err)
-				}
-        s.ChannelMessageDelete(thread.ID, m.ID)
-				_, _ = s.ChannelMessageSend(thread.ID, "OK, starting...!")
-				m.ChannelID = thread.ID
-        go func() {
-          /*
-          timer := time.NewTimer(10 * time.Second)
-          <-timer.C */
-          s.ChannelMessageSend(thread.ID, "1" + m.Author.Username)
-          time.Sleep(2 * time.Second)
-          s.ChannelMessageSend(thread.ID, "2" + m.Author.Username)
-          time.Sleep(2 * time.Second)
-          s.ChannelMessageSend(thread.ID, "3" + m.Author.Username)
-        }()
-			} else {
 				_, _ = s.ChannelMessageSendReply(m.ChannelID, "correct!", m.Reference())
         s.ChannelMessageDelete(m.ChannelID, m.ID)
         go func() {
@@ -74,17 +55,17 @@ func main() {
               case <- quit:
                   return
               default:
-                s.ChannelMessageSend(m.ChannelID, "1" + m.Author.Username)
-                time.Sleep(4 * time.Second)
-                s.ChannelMessageSend(m.ChannelID, "2" + m.Author.Username)
-                time.Sleep(4 * time.Second)
-                s.ChannelMessageSend(m.ChannelID, "3" + m.Author.Username)
-                time.Sleep(4 * time.Second)
+                for key := range word_set {
+                  s.ChannelMessageSend(m.ChannelID, "1" + word_set[key] + m.Author.Username)
+                  s.AddHandlerOnce(func(s *discordgo.Session, m *discordgo.MessageCreate) {
+                    fmt.Println("here")
+                  })
+                  time.Sleep(4 * time.Second)
+                }
               }
           }
           
         }()
-			}
 			games[m.ChannelID] = time.Now()
 
       
