@@ -61,12 +61,28 @@ func main() {
           /*
           timer := time.NewTimer(10 * time.Second)
           <-timer.C */
+          t1 := time.NewTimer(time.Second * 15)
+          quit := make(chan bool)
+          go func() {
+            s.ChannelMessageSend(m.ChannelID, "Timer run...")
+            <- t1.C
+            quit <- true
+            s.ChannelMessageSend(m.ChannelID, "Time is up!")
+          }()
+          for {
+              select {
+              case <- quit:
+                  return
+              default:
+                s.ChannelMessageSend(m.ChannelID, "1" + m.Author.Username)
+                time.Sleep(4 * time.Second)
+                s.ChannelMessageSend(m.ChannelID, "2" + m.Author.Username)
+                time.Sleep(4 * time.Second)
+                s.ChannelMessageSend(m.ChannelID, "3" + m.Author.Username)
+                time.Sleep(4 * time.Second)
+              }
+          }
           
-          s.ChannelMessageSend(m.ChannelID, "1" + m.Author.Username)
-          time.Sleep(2 * time.Second)
-          s.ChannelMessageSend(m.ChannelID, "2" + m.Author.Username)
-          time.Sleep(2 * time.Second)
-          s.ChannelMessageSend(m.ChannelID, "3" + m.Author.Username)
         }()
 			}
 			games[m.ChannelID] = time.Now()
